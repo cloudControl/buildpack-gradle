@@ -13,7 +13,12 @@ BUILD_DIR=$1
 CACHE_DIR=$2
 
 GRADLE_DIST="gradle-1.11"
-GRADLE_TASK="stage"
+
+if [ -f $BUILD_DIR/.buildpack/tasks ] ; then
+  GRADLE_TASK="$(cat $BUILD_DIR/.buildpack/tasks)"
+else
+  GRADLE_TASK="stage"
+fi
 
 curl --silent --location "${JVM_BUILDPACK_COMMON_URL}" | tar xz
 . bin/java

@@ -62,3 +62,24 @@ EOF`
   assertCapturedSuccess
   assertCaptured "${expected_gradlew_output}"
 }
+
+
+testCompileWithCustomTask()
+{
+  expected_stage_output="STAGING:${RANDOM}"
+
+  cat > ${BUILD_DIR}/build.gradle <<EOF
+task foo << {
+  println "${expected_stage_output}"
+}
+EOF
+
+  mkdir -p ${BUILD_DIR}/.buildpack
+  echo "foo" >> ${BUILD_DIR}/.buildpack/tasks
+
+  compile
+
+  assertCapturedSuccess
+  assertCaptured "${expected_stage_output}"
+  assertCaptured "executing gradle foo"
+}
