@@ -5,7 +5,7 @@
 testCompile()
 {
   expected_stage_output="STAGING:${RANDOM}"
-  
+
   cat > ${BUILD_DIR}/build.gradle <<EOF
 task stage {
   println "${expected_stage_output}"
@@ -13,23 +13,23 @@ task stage {
 EOF
 
   compile
-  
+
   assertCapturedSuccess
   assertCaptured "Installing OpenJDK 1.7"
   assertCaptured "Installing gradle-1.11"
-  assertCaptured "${expected_stage_output}" 
+  assertCaptured "${expected_stage_output}"
   assertCaptured "BUILD SUCCESSFUL"
   assertTrue "Java should be present in runtime." "[ -d ${BUILD_DIR}/.jdk ]"
   assertTrue "Java version file should be present." "[ -f ${BUILD_DIR}/.jdk/version ]"
-  assertTrue "System properties file should be present in build dir." "[ -f ${BUILD_DIR}/system.properties ]" 
-  assertTrue "Gradle profile.d file should be present in build dir." "[ -f ${BUILD_DIR}/.profile.d/gradle.sh ]" 
+  assertTrue "System properties file should be present in build dir." "[ -f ${BUILD_DIR}/system.properties ]"
+  assertTrue "Gradle profile.d file should be present in build dir." "[ -f ${BUILD_DIR}/.profile.d/gradle.sh ]"
 }
 
 
 testCompile_Fail()
 {
   expected_stage_output="STAGING:${RANDOM}"
-  
+
   cat > ${BUILD_DIR}/build.gradle <<EOF
 task stage {
   throw new GradleException("${expected_stage_output}")
@@ -58,7 +58,28 @@ EOF
 EOF`
 
   compile
-  
+
   assertCapturedSuccess
-  assertCaptured "${expected_gradlew_output}" 
+  assertCaptured "${expected_gradlew_output}"
+}
+
+
+testCompileWithCustomTask()
+{
+  expected_stage_output="STAGING:${RANDOM}"
+
+  cat > ${BUILD_DIR}/build.gradle <<EOF
+task foo << {
+  println "${expected_stage_output}"
+}
+EOF
+
+  mkdir -p ${BUILD_DIR}/.buildpack
+  echo "foo" >> ${BUILD_DIR}/.buildpack/tasks
+
+  compile
+
+  assertCapturedSuccess
+  assertCaptured "${expected_stage_output}"
+  assertCaptured "executing gradle foo"
 }
